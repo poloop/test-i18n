@@ -1,0 +1,9 @@
+{
+  // Comment about inspire
+  inspire: {
+    test: 'Bonjour le monde',
+    color: 0x00FF00,
+    francis: 'Francis est manquant',
+    viande: 'saucisse'
+  }
+}

@@ -1,0 +1,8 @@
+{
+  // Comment about inspire
+  inspire: {
+    test: 'Hello world',
+    color: 0xFF0000,
+    alfred: 'Alfred is missing'
+  }
+}

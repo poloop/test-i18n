@@ -1,0 +1,41 @@
+{
+  "name": "extract-i18n",
+  "version": "0.0.1",
+  "description": "Script to extract and compare i18n keys in a Vue/Nuxt project",
+  "bin": {
+    "extract-i18n": "bin/extract-i18n.js"
+  },
+  "source": "./src/extract-i18n.ts",
+  "main": "./dist/extract-i18n.js",
+  "module": "./dist/extract-i18n.umd.js",
+  "exports": "./dist/extract-i18n.modern.js",
+  "scripts": {
+    "build": "rm -fr ./dist && microbundle --target node -f umd,modern",
+    "dev": "microbundle watch --target node",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "javascript",
+    "typescript",
+    "i18n",
+    "vue"
+  ],
+  "author": "plong",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^8.2.0",
+    "dot-object": "^2.1.4",
+    "glob": "^7.2.0",
+    "is-valid-glob": "^1.0.0",
+    "json5": "^2.2.0",
+    "path": "^0.12.7",
+    "terminal-kit": "^2.1.6"
+  },
+  "devDependencies": {
+    "@types/dot-object": "^2.1.2",
+    "@types/glob": "^7.1.4",
+    "@types/is-valid-glob": "^1.0.0",
+    "@types/node": "^16.10.1",
+    "microbundle": "^0.13.3"
+  }
+}
