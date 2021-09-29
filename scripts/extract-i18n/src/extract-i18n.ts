@@ -1,17 +1,18 @@
 
-import LanguageFilesParser from './language-files-parser'
+import LanguageFilesParser, { defaultParserOptions } from './language-files-parser'
 
-export function createI18nReport() {
-  const parser = new LanguageFilesParser({
-    languageFiles: './locale/**/*.json5'
-  })
-  const data = parser.read(parser.options.languageFiles)
-  console.log('Missing keys', parser.getMissingKeys(parser.extract(data)))
+export enum ReportActions {
+  MISSINGS = 'missings',
+  DUPLICATES = 'duplicates'
+}
 
-  const missingKeys = parser.getMissingKeys(parser.extract(data))
+export function createI18nReport(actions: ReportActions, languageFiles: string | undefined = defaultParserOptions.languageFiles) {
+  const parser = new LanguageFilesParser({ languageFiles })
+  const data = parser.extract(parser.read(parser.options.languageFiles)) 
 
   return {
-    missingKeys,
+    missingKeys: (!actions || actions === ReportActions.MISSINGS) ? parser.getMissingKeys(data) : [],
+    duplicateKeys: (!actions || actions === ReportActions.DUPLICATES) ? parser.getDuplicateKeys(data) : [],
   }
 }
 

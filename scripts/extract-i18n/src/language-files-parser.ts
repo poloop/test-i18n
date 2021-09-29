@@ -1,9 +1,9 @@
-import path from 'path'
-import fs from 'fs'
+import * as path from 'path'
+import * as fs from 'fs'
 import glob from 'glob'
 import isValidGlob from 'is-valid-glob'
 import json5 from 'json5'
-import Dot from 'dot-object';
+import Dot from 'dot-object'
 
 export interface I18nObject {
   [index: string]: string
@@ -24,9 +24,8 @@ type SimpleFile = {
   content: I18nStructuredData
 }
 
-const defaultParserOptions: ParserOptions = {
-  languageFiles: './locale/**/*.?(json|json5|js|ts)',
-  encoding: 'utf8'
+export const defaultParserOptions: ParserOptions = {
+  languageFiles: './locale/**/*.?(json|json5)'
 }
 
 export default class LanguageFilesParser {
@@ -40,7 +39,7 @@ export default class LanguageFilesParser {
     }
   }
 
-  read(src: string | undefined):  SimpleFile[] {
+  read(src: string | undefined): SimpleFile[] {
     if (!isValidGlob(src)) {
       throw new Error("languageFiles isn't a valid glob pattern.");
     }
@@ -56,40 +55,34 @@ export default class LanguageFilesParser {
   
     return targetFiles.map((f: string) => {
       const fullPath: string = path.resolve(process.cwd(), f)
-      const extension: string = fullPath.substring(fullPath.lastIndexOf('.') + 1).toLowerCase()
+      const extension: string = path.extname(fullPath).toLowerCase()
 
       let content: I18nStructuredData = {}
-
-      switch(extension) {
-        case 'json':
-          content = JSON.parse(<string>fs.readFileSync(fullPath, this.options.encoding))
+      
+      switch (extension) {
+        case '.json':
+          content = JSON.parse(<string>fs.readFileSync(fullPath, 'utf8'))
           break;
-        case 'json5':
-          content = json5.parse(<string>fs.readFileSync(fullPath, this.options.encoding))
-          break;
-        case 'js':
-        case 'ts':
-          content = require(f)
+        case '.json5':
+          content = json5.parse(<string>fs.readFileSync(fullPath, 'utf8'))
           break;
       }
 
-      const fileName = f.replace(process.cwd(), '.')
-
       return <SimpleFile>{
-        fileName,
+        fileName: f.replace(process.cwd(), '.'),
         path: f,
         content
       }
     })
   }
 
-  extract(languageFiles: SimpleFile[]): I18nStructuredData {
+  extract(languageFiles: (SimpleFile)[]): I18nStructuredData {
     const localeDir = this.options.languageFiles?.split('**')[0]
     if (!localeDir) {
       throw new Error("languageFiles should be in a separate directory.");
     }
     return languageFiles.reduce((acc: any, file: SimpleFile) => {
-      const i18nFileName: string = file.fileName.substring(file.fileName.lastIndexOf('/') + 1, file.fileName.lastIndexOf('.'))
+      const i18nFileName: string = path.basename(file.fileName)
 
       const regExp = new RegExp(`(?<=${localeDir})(.*?)(?=/)`)
 
@@ -115,7 +108,7 @@ export default class LanguageFilesParser {
     const missingKeys: { lang: string, fileName: string, key: string }[] = [] 
     Object.keys(data).forEach((lang: string) => {
       Object.keys(data[lang]).forEach((file: string) => {
-        Object.keys((data[lang] as I18nObject)[file]).forEach((key: string) => {
+        Object.keys((data[lang] as I18nStructuredData)[file]).forEach((key: string) => {
           Object.keys(data).filter(lg => lg !== lang).forEach((otherLang: string) => {
             if (!((data[otherLang] as I18nStructuredData)?.[file] as I18nObject)?.[key]) {
               missingKeys.push({
@@ -131,13 +124,21 @@ export default class LanguageFilesParser {
     return missingKeys
   }
 
-  getDuplicateKeys(data: I18nStructuredData): { lang: string, key: string, files: string[]}[] {
-    const duplcateKeys: { lang: string, key: string, files: string[]}[] = []
+  getDuplicateKeys(data: I18nStructuredData): { content: string, lang: string, fileNames: string[], keys: string[]}[] {
+    const duplicateContents: { content: string, lang: string, file: string, key: string}[] = []
     Object.keys(data).forEach((lang: string) => {
-      Object.values(data[lang]).forEach((fileData) => {
-        Object.keys(fileData)
+      Object.keys(data[lang]).forEach((file: string) => {
+        Object.keys((data[lang] as I18nStructuredData)[file]).forEach((key: string) => {
+          duplicateContents.push({ content: ((data[lang] as I18nStructuredData)[file] as I18nObject)[key], lang, key, file})
+        })
       })
     })
-    return duplcateKeys
+    const duplicateKeys = duplicateContents.reduce((acc: any, { content, lang, file, key }) => {
+      if (duplicateContents.filter(({content: contentToCheck}) => content === contentToCheck).length > 1) {
+        acc[content] = {content, lang, fileNames: [...(acc[content]?.fileNames ?? []), file], keys: [...(acc[content]?.keys ?? []), key]}
+      }
+      return acc
+    }, {})
+    return Object.values(duplicateKeys)
   }
 }
