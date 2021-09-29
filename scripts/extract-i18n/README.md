@@ -1,24 +1,27 @@
 # Extract i18n
 
-## Config
+Support `.json` and `.json5` locale files. Locales files must be in a folder named with the lang code (en|fr|...).
 
 ```bash
-npx extract-i18n init
+[localeDir]
+└──[lang]
+    └──[*.(json|json5)]
+    └──...
 ```
-
-Copy config file `extract-i18n.config.js` in current working directory.
 
 ## Build
 
 ```bash
+npm run install
 npm run build
 ```
 
 ## Run
 
 ```bash
-npx extract-i18n [commmand]
+npx extract-i18n [commmand] <languageFiles>
 ```
 
 _`missing-keys` reports all missing keys
 _`duplicate-keys` reports all duplicate keys
+_`languageFiles`: `"./locale/**/*.json"`
