@@ -50,7 +50,8 @@ const duplicateKeys = (languageFiles) => {
 
 
 const defaultAction = (languageFiles) => {
-  console.log('all', languageFiles)
+  missingKeys(languageFiles)
+  duplicateKeys(languageFiles)
 }
 
 program
